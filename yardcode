@@ -1,0 +1,149 @@
+# Create React app
+npx create-react-app .
+
+# Install dependencies
+npm install papaparse lucide-react tailwindcss postcss autoprefixer
+
+# Initialize Tailwind
+npx tailwindcss init -p
+# Create src/components directory
+mkdir src/components
+
+# Create files
+touch src/components/YardCheck.js
+touch src/index.css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+import YardCheck from './components/YardCheck';
+
+import React, { useState, useMemo } from 'react';
+import { Camera } from 'lucide-react';
+
+const YardCheck = () => {
+  const [scannedTrailer, setScannedTrailer] = useState('');
+  const [zone, setZone] = useState('');
+  const [spot, setSpot] = useState('');
+  const [checks, setChecks] = useState([]);
+
+  const zones = [
+    'Zone A',
+    'Zone B', 
+    'Zone C',
+    'Exit Zone',
+    'Overflow',
+    'Inbound Zone',
+    'Unload Docks',
+    'Wing 1 Reload Docks',
+    'Wing 2 Reload Docks',
+    'Skid Docks'
+  ];
+
+  const validateLocation = () => {
+    const newCheck = {
+      trailer: scannedTrailer,
+      zone,
+      spot,
+      timestamp: new Date().toLocaleString(),
+      status: 'Pending System Validation',
+      systemLocation: 'Pending'
+    };
+
+    setChecks([newCheck, ...checks]);
+    setScannedTrailer('');
+    setSpot('');
+  };
+
+  return (
+    <div className="max-w-md mx-auto p-4 space-y-6">
+      <div className="bg-white shadow rounded-lg p-6">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Trailer Number</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={scannedTrailer}
+                onChange={(e) => setScannedTrailer(e.target.value)}
+                className="w-full p-2 border rounded"
+                placeholder="Enter trailer number"
+              />
+              <button type="button" className="p-2 bg-blue-500 text-white rounded">
+                <Camera size={24} />
+              </button>
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-1">Zone</label>
+            <select 
+              value={zone}
+              onChange={(e) => {
+                setZone(e.target.value);
+                setSpot('');
+              }}
+              className="w-full p-2 border rounded"
+            >
+              <option value="">Select Zone</option>
+              {zones.map((z) => (
+                <option key={z} value={z}>{z}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Spot Number</label>
+            <input
+              type="text"
+              value={spot}
+              onChange={(e) => setSpot(e.target.value)}
+              className="w-full p-2 border rounded"
+              placeholder="Enter spot number"
+            />
+          </div>
+
+          <button 
+            type="button"
+            onClick={validateLocation}
+            className="w-full bg-green-500 text-white p-3 rounded font-medium"
+            disabled={!scannedTrailer || !zone || !spot}
+          >
+            Validate Location
+          </button>
+        </div>
+      </div>
+
+      {checks.length > 0 && (
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="font-medium mb-4">Recent Checks</h2>
+          <div className="space-y-2">
+            {checks.map((check, index) => (
+              <div 
+                key={index}
+                className="p-3 rounded bg-gray-100"
+              >
+                <div className="font-medium">Trailer: {check.trailer}</div>
+                <div className="text-sm">Location: {check.zone} - Spot {check.spot}</div>
+                <div className="text-sm text-gray-500">{check.timestamp}</div>
+                <div className="text-sm">{check.status}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default YardCheck;
+export default App;
